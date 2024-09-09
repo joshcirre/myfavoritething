@@ -44,4 +44,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function favoritedFeeds()
+    {
+        return $this->belongsToMany(Feed::class, 'feed_user')->withTimestamps();
+    }
+
+    public function feeds()
+    {
+        return $this->hasMany(Feed::class);
+    }
 }
