@@ -12,6 +12,17 @@ new class extends Component {
     public $file;
     public Feed $feed;
     public string $content = '';
+    public $posts;
+
+    public function mount()
+    {
+        $this->loadPosts();
+    }
+
+    public function loadPosts()
+    {
+        $this->posts = $this->feed->posts()->with('user')->orderBy('created_at', 'asc')->get();
+    }
 
     public function createPost()
     {
@@ -39,14 +50,8 @@ new class extends Component {
         }
 
         $this->reset('content', 'file');
+        $this->loadPosts(); // Reload posts after creating a new one
         $this->dispatch('newPost');
-    }
-
-    public function with()
-    {
-        return [
-            'posts' => $this->feed->posts()->with('user')->orderBy('created_at', 'asc')->get(),
-        ];
     }
 
     private function isImage($url)
@@ -60,23 +65,26 @@ new class extends Component {
     {
         if (auth()->user()->can('delete', $post)) {
             $post->delete();
+            $this->loadPosts(); // Reload posts after deleting one
         }
     }
 }; ?>
 
-<div x-data="{
+<div wire:poll.5s='loadPosts' x-data="{
     scrollToBottom() {
         const container = this.$refs.postsContainer;
         container.scrollTop = container.scrollHeight;
     }
-}" x-init="scrollToBottom" @newPost.window="scrollToBottom" class="flex flex-col h-full">
+}" x-init="scrollToBottom" @newPost.window="scrollToBottom"
+    class="flex flex-col h-full">
     <div x-ref="postsContainer" class="overflow-y-auto flex-grow pr-4 pb-4 mb-4 space-y-4">
         @foreach ($posts as $post)
             <div class="relative p-4 mb-4 rounded-lg shadow bg-slate-50">
                 @can('delete', $post)
                     <button wire:click="deletePost({{ $post->id }})"
+                        wire:confirm="Are you sure you want to delete this post?"
                         class="absolute top-2 right-2 text-red-500 hover:text-red-700" title="Delete post">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd"
                                 d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
                                 clip-rule="evenodd" />

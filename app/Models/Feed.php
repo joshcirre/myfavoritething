@@ -58,4 +58,16 @@ class Feed extends Model
                $this->user_id === $user->id ||
                $this->favoritedBy->contains($user);
     }
+
+    public function favorites()
+    {
+        return $this->belongsToMany(User::class, 'feed_user')->withTimestamps();
+    }
+
+    public function favoriteVotes()
+    {
+        return $this->belongsToMany(User::class, 'feed_user')
+            ->withPivot('favorite_post_id')
+            ->withTimestamps();
+    }
 }

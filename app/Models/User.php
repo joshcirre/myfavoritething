@@ -54,4 +54,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Feed::class);
     }
+
+    public function favoriteVotes()
+    {
+        return $this->belongsToMany(Feed::class, 'feed_user')
+            ->withPivot('favorite_post_id')
+            ->withTimestamps();
+    }
 }

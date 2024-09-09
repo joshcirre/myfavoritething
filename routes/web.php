@@ -1,9 +1,12 @@
 <?php
 
+use App\Livewire\VotePage;
 use App\Models\Feed;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome');
+Route::get('/', function () {
+    return view('welcome');
+});
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -20,5 +23,10 @@ Route::get('/feeds/{feed}', function (Feed $feed) {
 
     return view('feed', ['feed' => $feed]);
 })->name('feed.show')->middleware('auth');
+
+// Update this route to use the Livewire VotePage component
+Route::get('/feeds/{feed}/vote', function (Feed $feed) {
+    return view('vote', ['feed' => $feed]);
+})->name('feed.vote')->middleware('auth');
 
 require __DIR__.'/auth.php';
