@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('feeds', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->string('title');
             $table->string('slug')->unique()->nullable();
+            $table->integer('days_active')->default(30);
             $table->timestamps();
         });
     }

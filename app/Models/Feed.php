@@ -14,6 +14,7 @@ class Feed extends Model
         'user_id',
         'title',
         'slug',
+        'days_active',
     ];
 
     protected static function boot()
@@ -44,5 +45,17 @@ class Feed extends Model
     public function resolveRouteBinding($value, $field = null)
     {
         return $this->where('id', $value)->orWhere('slug', $value)->firstOrFail();
+    }
+
+    public function isActive()
+    {
+        return $this->created_at->addDays($this->days_active)->isFuture();
+    }
+
+    public function canAccess(User $user)
+    {
+        return $this->isActive() ||
+               $this->user_id === $user->id ||
+               $this->favoritedBy->contains($user);
     }
 }

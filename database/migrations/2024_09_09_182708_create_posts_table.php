@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignUuid('feed_id')->constrained('feeds');
-            $table->string('media_url');
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('feed_id')->constrained('feeds')->cascadeOnDelete();
+            $table->string('media_url')->nullable();
             $table->text('content');
             $table->timestamps();
         });

@@ -8,13 +8,20 @@ new class extends Component {
     public $title = '';
     public $slug = '';
     public $showSlug = false;
+    public $daysActive = 30;
 
     public function with(): array
     {
+        $user = auth()->user();
+        $userFeeds = $user->feeds()->with('user')->get();
+        $favoritedFeeds = $user->favoritedFeeds()->with('user')->get();
+
+        $allFeeds = $userFeeds->merge($favoritedFeeds)->unique('id');
+
         return [
-            'feeds' => Feed::with('user')->get(),
-            'userFeeds' => auth()->user()->feeds->pluck('id'),
-            'favoritedFeeds' => auth()->user()->favoritedFeeds->pluck('id'),
+            'feeds' => $allFeeds,
+            'userFeeds' => $user->feeds->pluck('id'),
+            'favoritedFeeds' => $user->favoritedFeeds->pluck('id'),
         ];
     }
 
@@ -23,19 +30,21 @@ new class extends Component {
         $this->validate([
             'title' => 'required|min:3|max:255',
             'slug' => 'nullable|min:3|max:255|unique:feeds',
+            'daysActive' => 'required|integer|min:1',
         ]);
 
         $feedData = [
             'title' => $this->title,
+            'days_active' => $this->daysActive,
         ];
 
-        if ($this->showSlug && !empty($this->slug)) {
+        if (!empty($this->slug)) {
             $feedData['slug'] = Str::slug($this->slug);
         }
 
         auth()->user()->feeds()->create($feedData);
 
-        $this->reset(['title', 'slug', 'showSlug']);
+        $this->reset(['title', 'slug', 'showSlug', 'daysActive']);
     }
 }; ?>
 
@@ -66,6 +75,13 @@ new class extends Component {
             </div>
 
             <div>
+                <x-input-label for="daysActive" :value="__('Days Active')" />
+                <x-text-input wire:model="daysActive" id="daysActive" type="number" class="block mt-1 w-full"
+                    required />
+                <x-input-error :messages="$errors->get('daysActive')" class="mt-2" />
+            </div>
+
+            <div>
                 <x-primary-button type="submit">
                     {{ __('Create Feed') }}
                 </x-primary-button>
@@ -74,29 +90,27 @@ new class extends Component {
 
         <!-- List of All Feeds -->
         <div class="mt-8">
-            <h3 class="mb-4 text-lg font-medium text-gray-900">{{ __('All Feeds') }}</h3>
+            <h3 class="mb-4 text-lg font-medium text-gray-900">{{ __('Your Feeds') }}</h3>
             @if ($feeds->isEmpty())
-                <p class="text-gray-500">{{ __('There are no feeds yet.') }}</p>
+                <p class="text-gray-500">{{ __('You have no feeds yet.') }}</p>
             @else
                 <ul class="divide-y divide-gray-200">
                     @foreach ($feeds as $feed)
-                        <li class="flex justify-between items-center py-4">
+                        <li
+                            class="flex justify-between items-center py-4 @can('manage-feed', $feed) bg-indigo-50 border-l-4 border-indigo-500 @endcan">
                             <div class="flex items-center">
-                                <span class="text-lg font-medium text-gray-900">{{ $feed->title }}</span>
-                                @if ($userFeeds->contains($feed->id))
-                                    <span
-                                        class="inline-flex px-2 ml-2 text-xs font-semibold leading-5 text-green-800 bg-green-100 rounded-full">
-                                        {{ __('Author') }}
-                                    </span>
-                                @endif
+                                <span class="ml-4 text-lg font-medium text-gray-900">{{ $feed->title }}</span>
                                 @if ($favoritedFeeds->contains($feed->id))
                                     <span class="ml-2 text-yellow-500">★</span>
                                 @endif
+                                @can('manage-feed', $feed)
+                                    <span class="ml-2 text-xs font-semibold text-indigo-600">{{ __('(Your Feed)') }}</span>
+                                @endcan
                             </div>
                             <div class="flex items-center">
-                                <span class="mr-4 text-sm text-gray-500">{{ $feed->user->name }}</span>
+                                <span class="mr-4 text-sm text-gray-500">Created by {{ $feed->user->name }}</span>
                                 <a href="{{ $feed->slug ? route('feed.show', $feed->slug) : route('feed.show', $feed->id) }}"
-                                    class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white bg-indigo-600 rounded-md border border-transparent hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    class="inline-flex items-center px-3 py-2 mr-2 text-sm font-medium leading-4 text-white bg-indigo-600 rounded-md border border-transparent hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                     {{ __('View') }}
                                 </a>
                             </div>

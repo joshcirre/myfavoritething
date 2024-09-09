@@ -13,8 +13,12 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
-Route::get('/feed/{feed}', function (Feed $feed) {
+Route::get('/feeds/{feed}', function (Feed $feed) {
+    if (! $feed->canAccess(auth()->user())) {
+        abort(403, 'This feed is no longer active.');
+    }
+
     return view('feed', ['feed' => $feed]);
-})->name('feed.show');
+})->name('feed.show')->middleware('auth');
 
 require __DIR__.'/auth.php';
