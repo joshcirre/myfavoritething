@@ -27,8 +27,11 @@ new class extends Component {
 
         $feedData = [
             'title' => $this->title,
-            'slug' => !empty($this->slug) ? Str::slug($this->slug) : Str::slug($this->title),
         ];
+
+        if ($this->showSlug && !empty($this->slug)) {
+            $feedData['slug'] = Str::slug($this->slug);
+        }
 
         auth()->user()->feeds()->create($feedData);
 
@@ -36,7 +39,7 @@ new class extends Component {
     }
 }; ?>
 
-<div class="overflow-hidden bg-white rounded-lg shadow-sm">
+<div>
     <div class="p-6 space-y-6">
         <h2 class="text-2xl font-semibold text-gray-900">{{ __('Manage Feeds') }}</h2>
 
@@ -92,7 +95,7 @@ new class extends Component {
                             </div>
                             <div class="flex items-center">
                                 <span class="mr-4 text-sm text-gray-500">{{ $feed->user->name }}</span>
-                                <a href="{{ route('feed.show', $feed) }}"
+                                <a href="{{ $feed->slug ? route('feed.show', $feed->slug) : route('feed.show', $feed->id) }}"
                                     class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-white bg-indigo-600 rounded-md border border-transparent hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                     {{ __('View') }}
                                 </a>

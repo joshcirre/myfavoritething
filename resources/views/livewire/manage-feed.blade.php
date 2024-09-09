@@ -21,6 +21,14 @@ new class extends Component {
         $this->isEditing = true;
     }
 
+    public function deleteFeed()
+    {
+        if (Gate::allows('manage-feed', $this->feed)) {
+            $this->feed->delete();
+            return redirect()->route('dashboard');
+        }
+    }
+
     public function updateSlug()
     {
         if (Gate::allows('manage-feed', $this->feed)) {
@@ -28,16 +36,15 @@ new class extends Component {
                 'newSlug' => 'required|min:3|max:255|unique:feeds,slug,' . $this->feed->id,
             ]);
 
+            $oldSlug = $this->feed->slug;
             $this->feed->update(['slug' => Str::slug($this->newSlug)]);
             $this->isEditing = false;
-        }
-    }
 
-    public function with(): array
-    {
-        return [
-            'canManage' => Gate::allows('manage-feed', $this->feed),
-        ];
+            // Redirect to the new slug URL
+            if ($oldSlug !== $this->feed->slug) {
+                return redirect()->route('feed.show', $this->feed->slug);
+            }
+        }
     }
 }; ?>
 
@@ -58,12 +65,14 @@ new class extends Component {
                 <div class="flex justify-between py-3 text-sm">
                     <dt class="text-gray-500">{{ __('Slug') }}</dt>
                     <dd class="text-gray-900">
-                        @if ($canManage)
+                        @can('manage-feed', $feed)
                             @if ($isEditing)
                                 <form wire:submit="updateSlug" class="flex items-center">
-                                    <x-text-input wire:model="newSlug" type="text" class="mr-2 text-sm" />
-                                    <x-primary-button type="submit"
-                                        class="text-xs">{{ __('Save') }}</x-primary-button>
+                                    <div class="flex-grow mr-2">
+                                        <x-text-input wire:model="newSlug" type="text" class="w-full text-sm" />
+                                        <x-input-error :messages="$errors->get('newSlug')" class="mt-2" />
+                                    </div>
+                                    <x-primary-button type="submit" class="text-xs">{{ __('Save') }}</x-primary-button>
                                     <x-secondary-button wire:click="$set('isEditing', false)"
                                         class="ml-2 text-xs">{{ __('Cancel') }}</x-secondary-button>
                                 </form>
@@ -76,23 +85,21 @@ new class extends Component {
                             @endif
                         @else
                             {{ $feed->slug }}
-                        @endif
+                        @endcan
                     </dd>
                 </div>
             </dl>
         </div>
 
-        @if ($canManage)
+        @can('manage-feed', $feed)
             <div class="pt-4 border-t border-gray-200">
                 <div class="mt-2 space-y-2">
-                    <x-secondary-button class="justify-center w-full">
-                        {{ __('Edit Feed Details') }}
-                    </x-secondary-button>
-                    <x-danger-button class="justify-center w-full">
+                    <x-danger-button class="justify-center w-full" wire:click="deleteFeed"
+                        wire:confirm="Are you sure you want to delete this feed?">
                         {{ __('Delete Feed') }}
                     </x-danger-button>
                 </div>
             </div>
-        @endif
+        @endcan
     </div>
 </div>

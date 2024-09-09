@@ -22,11 +22,11 @@ new class extends Component {
 
         $media_url = null;
         if ($this->file) {
-            $path = Storage::disk('s3')->put('post-attachments', $this->file);
+            $path = Storage::disk('s3')->put('post-files', $this->file);
             $media_url = Storage::disk('s3')->url($path);
         }
 
-        $this->Feed->posts()->create([
+        $this->feed->posts()->create([
             'user_id' => auth()->id(),
             'content' => $this->content,
             'media_url' => $media_url,

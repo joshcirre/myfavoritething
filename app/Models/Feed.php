@@ -16,6 +16,16 @@ class Feed extends Model
         'slug',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($feed) {
+            $feed->posts()->delete();
+            $feed->favoritedBy()->detach();
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
