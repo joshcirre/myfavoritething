@@ -16,17 +16,17 @@ new class extends Component {
 
     public function loadPosts()
     {
-        $this->posts = $this->feed->posts()->with('user')->get();
+        $this->posts = $this->feed->posts()->with('user')->orderByDesc('votes')->get();
     }
 
     public function vote(Post $post)
     {
         $post->increment('votes');
-        $this->loadPosts(); // Reload posts to reflect the new vote count
+        $this->loadPosts(); // Reload posts to reflect the new vote count and order
     }
 }; ?>
 
-<div>
+<div wire:poll.5s="loadPosts">
     <h1 class="mb-4 text-2xl font-bold">Vote for Your Favorite Posts in "{{ $feed->title }}"</h1>
 
     <div class="space-y-4">
