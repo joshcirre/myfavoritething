@@ -44,7 +44,10 @@ class Feed extends Model
 
     public function resolveRouteBinding($value, $field = null)
     {
-        return $this->where('id', $value)->orWhere('slug', $value)->firstOrFail();
+        return $this->where(function ($query) use ($value) {
+            $query->where('slug', $value)
+                ->orWhereRaw('id::text = ?', [$value]);
+        })->firstOrFail();
     }
 
     public function isActive()
