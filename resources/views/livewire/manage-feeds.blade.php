@@ -97,8 +97,8 @@ new class extends Component {
                 <ul class="divide-y divide-gray-200">
                     @foreach ($feeds as $feed)
                         <li
-                            class="flex justify-between items-center py-4 @can('manage-feed', $feed) bg-indigo-50 border-l-4 border-indigo-500 @endcan">
-                            <div class="flex items-center">
+                            class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 @can('manage-feed', $feed) bg-indigo-50 border-l-4 border-indigo-500 @endcan">
+                            <div class="flex flex-row items-center">
                                 <span class="ml-4 text-lg font-medium text-gray-900">{{ $feed->title }}</span>
                                 @if ($favoritedFeeds->contains($feed->id))
                                     <span class="ml-2 text-yellow-500">★</span>
@@ -107,10 +107,11 @@ new class extends Component {
                                     <span class="ml-2 text-xs font-semibold text-indigo-600">{{ __('(Your Feed)') }}</span>
                                 @endcan
                             </div>
-                            <div class="flex items-center">
-                                <span class="mr-4 text-sm text-gray-500">Created by {{ $feed->user->name }}</span>
+                            <div class="flex flex-col items-start mt-2 sm:flex-row sm:items-center sm:mt-0">
+                                <span class="ml-4 text-sm text-gray-500 sm:mr-4">Created by
+                                    {{ $feed->user->name }}</span>
                                 <a href="{{ $feed->slug ? route('feed.show', $feed->slug) : route('feed.show', $feed->id) }}"
-                                    class="inline-flex items-center px-3 py-2 mr-2 text-sm font-medium leading-4 text-white bg-indigo-600 rounded-md border border-transparent hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    class="inline-flex items-center px-3 py-2 mt-2 ml-4 text-sm font-medium leading-4 text-white bg-indigo-600 rounded-md border border-transparent sm:mt-0 sm:ml-0 sm:mr-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                     {{ __('View') }}
                                 </a>
                             </div>
