@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Feed extends Model
 {
@@ -46,7 +47,13 @@ class Feed extends Model
     {
         return $this->where(function ($query) use ($value) {
             $query->where('slug', $value)
-                ->orWhereRaw('id::text = ?', [$value]);
+                ->orWhere(function ($query) use ($value) {
+                    if (DB::connection()->getDriverName() === 'pgsql') {
+                        $query->orWhereRaw('id::text = ?', [$value]);
+                    } else {
+                        $query->orWhere('id', $value);
+                    }
+                });
         })->firstOrFail();
     }
 

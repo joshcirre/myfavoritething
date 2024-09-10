@@ -1,6 +1,5 @@
 <?php
 
-use App\Livewire\VotePage;
 use App\Models\Feed;
 use Illuminate\Support\Facades\Route;
 
